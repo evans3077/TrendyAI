@@ -1,0 +1,55 @@
+{
+    "job_id": "job_20251114_083646_9e0c9b",
+    "paths": {
+        "video": "data\\processed\\job_20251114_083646_9e0c9b\\video\\original.mp4",
+        "audio": "data\\processed\\job_20251114_083646_9e0c9b\\audio\\audio.wav",
+        "frames_folder": "data\\processed\\job_20251114_083646_9e0c9b\\frames",
+        "clips_folder": "data\\processed\\job_20251114_083646_9e0c9b\\clips"
+    },
+    "frames": [
+        "frame_0.jpg",
+        "frame_1.jpg",
+        "frame_10.jpg",
+        "frame_11.jpg",
+        "frame_12.jpg",
+        "frame_13.jpg",
+        "frame_14.jpg",
+        "frame_15.jpg",
+        "frame_16.jpg",
+        "frame_17.jpg",
+        "frame_18.jpg",
+        "frame_19.jpg",
+        "frame_2.jpg",
+        "frame_20.jpg",
+        "frame_21.jpg",
+        "frame_22.jpg",
+        "frame_23.jpg",
+        "frame_24.jpg",
+        "frame_25.jpg",
+        "frame_26.jpg",
+        "frame_27.jpg",
+        "frame_28.jpg",
+        "frame_29.jpg",
+        "frame_3.jpg",
+        "frame_4.jpg",
+        "frame_5.jpg",
+        "frame_6.jpg",
+        "frame_7.jpg",
+        "frame_8.jpg",
+        "frame_9.jpg"
+    ],
+    "clips": [],
+    "video_metadata": {
+        "duration_seconds": 59.64,
+        "fps": 30.0,
+        "resolution": "360x640"
+    },
+    "analysis": {
+        "scene_summary": "BERT and GPT specifically focus on natural language. Both are pre-trained to understand language, then fine-tuned to understand a specific task in that language. BERT is a stack of transformer encoders, and the GPT is the stack of transformers.",
+        "audio_summary": " BERT vs. GPT Both are derived from the transformer neural network architecture that can convert sequences to sequences. A sequence is typically an order set of data, and in natural language processing, this could be a set of words to form a sentence. BERT and GPT specifically focus on natural language. As far as their architecture is concerned, BERT is a stack of transformer encoders, and the GPT is the stack of transformer decoders. Both are pre-trained to understand language, then fine-tuned to understand a specific task in that language. So BERT, for example, is pre-trained on natural language inference and sentence text similarity, whereas GPT is pre-trained on the language modeling objective of predicting the next word in a given sentence. They are then both fine-tuned with supervised data, although GPT can alternatively use metal learning to make decisions without fine-tuned. BERT and GPT are then both fine-tuned with supervised data, and in natural language processing, they can be used to make decisions without fine-tuning.",
+        "detected_objects": [],
+        "detected_text": [],
+        "key_topics": []
+    },
+    "status": "completed"
+}
