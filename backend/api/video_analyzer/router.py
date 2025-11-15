@@ -16,3 +16,5 @@ async def analyze_uploaded_video(file: UploadFile = File(...)):
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Video analysis failed: {str(e)}")
+
+

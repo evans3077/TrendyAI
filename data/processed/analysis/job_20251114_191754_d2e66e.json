@@ -1,0 +1,53 @@
+{
+    "job_id": "job_20251114_191754_d2e66e",
+    "paths": {
+        "video": "data\\processed\\job_20251114_191754_d2e66e\\video\\original.mp4",
+        "audio": "data\\processed\\job_20251114_191754_d2e66e\\audio\\audio.wav",
+        "frames_folder": "data\\processed\\job_20251114_191754_d2e66e\\frames",
+        "clips_folder": "data\\processed\\job_20251114_191754_d2e66e\\clips",
+        "transcript_path": "data\\processed\\job_20251114_191754_d2e66e\\analysis\\transcript.txt",
+        "summary_path": "data\\processed\\job_20251114_191754_d2e66e\\analysis\\summary.txt"
+    },
+    "frames": [
+        "frame_0.jpg",
+        "frame_1.jpg",
+        "frame_10.jpg",
+        "frame_11.jpg",
+        "frame_12.jpg",
+        "frame_13.jpg",
+        "frame_14.jpg",
+        "frame_15.jpg",
+        "frame_16.jpg",
+        "frame_17.jpg",
+        "frame_18.jpg",
+        "frame_19.jpg",
+        "frame_2.jpg",
+        "frame_20.jpg",
+        "frame_21.jpg",
+        "frame_22.jpg",
+        "frame_23.jpg",
+        "frame_24.jpg",
+        "frame_25.jpg",
+        "frame_3.jpg",
+        "frame_4.jpg",
+        "frame_5.jpg",
+        "frame_6.jpg",
+        "frame_7.jpg",
+        "frame_8.jpg",
+        "frame_9.jpg"
+    ],
+    "clips": [],
+    "video_metadata": {
+        "duration_seconds": 50.68,
+        "fps": 30.0,
+        "resolution": "480x852"
+    },
+    "analysis": {
+        "scene_summary_path": "data\\processed\\job_20251114_191754_d2e66e\\analysis\\summary.txt",
+        "audio_transcript_path": "data\\processed\\job_20251114_191754_d2e66e\\analysis\\transcript.txt",
+        "detected_objects": [],
+        "detected_text": [],
+        "key_topics": []
+    },
+    "status": "completed"
+}

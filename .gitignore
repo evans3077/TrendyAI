@@ -1,3 +1,4 @@
 .env 
 "backend/core/client_secret.json" 
+venv/"backend/core/client_secret.json" 
 venv/

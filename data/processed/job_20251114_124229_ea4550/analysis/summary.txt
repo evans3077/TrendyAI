@@ -1,0 +1,1 @@
+BERT and GPT specifically focus on natural language. Both are pre-trained to understand language, then fine-tuned to understand a specific task in that language. BERT is a stack of transformer encoders, and the GPT is the stack of transformers.

@@ -1,0 +1,1 @@
+Transformer neural networks can translate one sequence to another. But these transformers weren't designed to solve language problems. To solve this, we can stack a bunch of transformer encoders. We get a bidirectional encoder representation of transformers, or BERT.
