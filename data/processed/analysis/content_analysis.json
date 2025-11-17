@@ -1,0 +1,59 @@
+{
+    "status": "completed",
+    "paths": {
+        "transcript": "E:\\new\\Trendy\\data\\processed\\job_20251115_151855_929c46\\analysis\\transcript.txt",
+        "summary": "E:\\new\\Trendy\\data\\processed\\job_20251115_151855_929c46\\analysis\\summary.txt",
+        "video": "E:\\new\\Trendy\\data\\processed\\video\\original.mp4",
+        "audio": "E:\\new\\Trendy\\data\\processed\\audio\\audio.wav",
+        "frames_folder": "E:\\new\\Trendy\\data\\processed\\frames"
+    },
+    "text": {
+        "transcript": "Introducing iPhone 17 Pro. To redefine Pro, we had to start again with solid aluminium. That's extruded, heated, forged, precision machined in finer and finer passes. Then analysed for colour and durability.  to create our first aluminium body, a light, firmly efficient and rigid enclosure, for the biggest battery with the longest battery life in any iPhone. The full width camera plateau elegantly integrates the end of the screen.  antenna. And in cases, a groundbreaking new pro camera system built for Apple intelligence, this is the most powerful chip ever made for any iPhone. But power generates heat. So we designed a new cooling system. This cycles the ionized water between liquid and gas within a vapor chamber laser-welded to the chassis that rapidly dissipates.  heat throughout the body. Ceramic shield now protects the back as well as the front. And the display is now three times more scratch resistant.  iPhone 17 Pro is the most cinematic camera we've ever made. The advanced camera system records Pro Res RAW, a 56% larger telephoto sensor, captures sharper imagery in all light conditions. More than 8x optical quality zoom to get even closer to the action.  And our brightest display plays it all back in chrome ocean up to 120 hertz. For stills all three lenses are now 48 megapixels. And the new telephoto provides classic framing, report, portraiture and action photography.  iPhone 17 Pro lets you create setups that would be impossible with conventional cameras. And this is the first phone to offer Genlock precisely synchronising multiple cameras and creating Hollywood level effects. The 18 megapixel front camera records you and everyone around you.  stage expands to include the whole team. Our fastest chip, our longest battery life and our most cinematic camera. The ultimate pro. iPhone 17 Pro.",
+        "summary": "iPhone 17 Pro is the most cinematic camera we've ever made. The advanced camera system records Pro Res RAW, a 56% larger telephoto sensor, captures sharper imagery in all light conditions. More than 8x optical quality zoom to get even closer to the action.",
+        "keywords": [
+            "17",
+            "action",
+            "aluminium",
+            "battery",
+            "body",
+            "camera",
+            "cameras",
+            "chip",
+            "cinematic",
+            "create",
+            "display",
+            "finer",
+            "heat",
+            "iphone",
+            "life",
+            "light",
+            "new",
+            "pro",
+            "records",
+            "telephoto"
+        ],
+        "topics": [
+            "The advanced camera system records Pro Res RAW, a 56% larger telephoto sensor, captures sharper imagery in all light conditions",
+            "Introducing iPhone 17 Pro",
+            "That's extruded, heated, forged, precision machined in finer and finer passes",
+            "To redefine Pro, we had to start again with solid aluminium",
+            "More than 8x optical quality zoom to get even closer to the action"
+        ],
+        "sentiment": {
+            "polarity": 0.5737130990221899,
+            "sentiment": "positive"
+        }
+    },
+    "visual": {
+        "stats": {
+            "frame_count": 0,
+            "resolution": null,
+            "avg_brightness": null
+        },
+        "detected_objects": [],
+        "detected_text": []
+    },
+    "audio": {
+        "path": "E:\\new\\Trendy\\data\\processed\\audio\\audio.wav"
+    }
+}

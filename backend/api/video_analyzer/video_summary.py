@@ -2,7 +2,7 @@ from transformers import pipeline
 
 summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
 
-def summarize_video(transcript: str):
+def summarize_long_text(transcript: str):
     if not transcript:
         return "No transcript available for summarization."
     result = summarizer(transcript, max_length=500, min_length=30, do_sample=False)

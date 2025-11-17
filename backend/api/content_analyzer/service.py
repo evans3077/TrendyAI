@@ -1,18 +1,38 @@
 import os
 import json
-from .utils.text_analyzer import analyze_text
-from .utils.audio_analyzer import analyze_audio
-from backend.api.content_analyzer.utils.visual_analyzer import analyze_visuals
-from .utils.fusion_engine import fuse_content
-from .utils.quality_scorer import compute_quality_score
+
+from .utils.file_utils import read_text_file, ensure_dir
+from .utils.text_utils import clean_text
+
+from .speech_to_text import transcribe_audio_file
+from .summarizer import generate_summary
+from .keyword_extractor import extract_keywords_keybert
+from .topic_extractor import extract_topics_minilm
+from .sentiment_analyzer import analyze_sentiment
+
+from .object_detector import detect_objects_yolo_cpu
+from .text_detector import detect_text_easyocr
+from .visual_analyzer import analyze_visual_features
 
 
 def analyze_job(job_path: str):
     """
-    Full multi-module CPU-safe analysis for next pipeline module.
+    Full intelligent CPU-friendly analysis.
+
+    Produces:
+        - Full transcript
+        - High-quality summary
+        - KeyBERT keywords
+        - Semantic topics (MiniLM)
+        - Sentiment
+        - YOLO object detection
+        - OCR on-screen text detection
+        - Visual metrics
     """
 
-    # === Locate files ===
+    # ---------------------------------------------
+    # PATHS
+    # ---------------------------------------------
     transcript_path = os.path.join(job_path, "transcript.txt")
     summary_path = os.path.join(job_path, "summary.txt")
 
@@ -21,21 +41,66 @@ def analyze_job(job_path: str):
     audio_path = os.path.join(base_folder, "audio", "audio.wav")
     video_path = os.path.join(base_folder, "video", "original.mp4")
 
-    # === Load text ===
-    transcript = open(transcript_path, "r", encoding="utf-8").read()
-    summary = open(summary_path, "r", encoding="utf-8").read()
+    # ---------------------------------------------
+    # 1. TRANSCRIPT
+    # ---------------------------------------------
+    if os.path.exists(transcript_path):
+        transcript = read_text_file(transcript_path)
+    else:
+        transcript = transcribe_audio_file(audio_path)
+        ensure_dir(os.path.dirname(transcript_path))
+        with open(transcript_path, "w", encoding="utf-8") as f:
+            f.write(transcript)
 
-    # === Run analysis modules ===
-    text_data = analyze_text(transcript, summary)
-    audio_data = analyze_audio(audio_path)
-    visual_data = analyze_visuals(frames_folder)
-    fusion_data = fuse_content(text_data, visual_data, audio_data)
-    quality_score = compute_quality_score(text_data, visual_data, audio_data)
+    transcript_clean = clean_text(transcript)
 
-    # === Assemble final output ===
+    # ---------------------------------------------
+    # 2. SUMMARY
+    # ---------------------------------------------
+    if os.path.exists(summary_path):
+        summary = read_text_file(summary_path)
+    else:
+        summary = generate_summary(transcript_clean)
+        ensure_dir(os.path.dirname(summary_path))
+        with open(summary_path, "w", encoding="utf-8") as f:
+            f.write(summary)
+
+    # ---------------------------------------------
+    # 3. KEYWORDS (KeyBERT-MiniLM)
+    # ---------------------------------------------
+    keywords = extract_keywords_keybert(transcript_clean)
+
+    # ---------------------------------------------
+    # 4. TOPICS (SentenceTransformer MiniLM)
+    # ---------------------------------------------
+    topics = extract_topics_minilm(transcript_clean)
+
+    # ---------------------------------------------
+    # 5. SENTIMENT
+    # ---------------------------------------------
+    sentiment = analyze_sentiment(transcript_clean)
+
+    # ---------------------------------------------
+    # 6. OBJECT DETECTION (YOLO)
+    # ---------------------------------------------
+    detected_objects = detect_objects_yolo_cpu(frames_folder)
+
+    # ---------------------------------------------
+    # 7. OCR ON-SCREEN TEXT
+    # ---------------------------------------------
+    detected_text = detect_text_easyocr(frames_folder)
+
+    # ---------------------------------------------
+    # 8. VISUAL FEATURE ANALYSIS
+    # ---------------------------------------------
+    visual_stats = analyze_visual_features(frames_folder)
+
+    # ---------------------------------------------
+    # 9. BUILD RESULT
+    # ---------------------------------------------
     result = {
         "status": "completed",
-        "mode": "cpu_modular_full_pipeline",
+
         "paths": {
             "transcript": transcript_path,
             "summary": summary_path,
@@ -43,19 +108,33 @@ def analyze_job(job_path: str):
             "audio": audio_path,
             "frames_folder": frames_folder,
         },
-        "text": text_data,
-        "visual": visual_data,
-        "audio": audio_data,
-        "fusion": fusion_data,
-        "quality_score": quality_score
+
+        "text": {
+            "transcript": transcript,
+            "summary": summary,
+            "keywords": keywords,
+            "topics": topics,
+            "sentiment": sentiment,
+        },
+
+        "visual": {
+            "stats": visual_stats,
+            "detected_objects": detected_objects,
+            "detected_text": detected_text,
+        },
+
+        "audio": {
+            "path": audio_path
+        }
     }
 
-    # === Save JSON ===
-    output_json = os.path.join(
-        base_folder, "..", "analysis", f"{os.path.basename(base_folder)}.json"
-    )
-    os.makedirs(os.path.dirname(output_json), exist_ok=True)
-    with open(output_json, "w", encoding="utf-8") as f:
+    # ---------------------------------------------
+    # 10. SAVE OUTPUT JSON
+    # ---------------------------------------------
+    output_path = os.path.join(base_folder, "analysis", "content_analysis.json")
+    ensure_dir(os.path.dirname(output_path))
+
+    with open(output_path, "w", encoding="utf-8") as f:
         json.dump(result, f, indent=4)
 
     return result

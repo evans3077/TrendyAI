@@ -2,8 +2,8 @@
     "status": "completed",
     "mode": "cpu_modular_full_pipeline",
     "paths": {
-        "transcript": "E:\\new\\Trendy\\data\\processed\\job_20251115_093010_aa5085\\analysis\\transcript.txt",
-        "summary": "E:\\new\\Trendy\\data\\processed\\job_20251115_093010_aa5085\\analysis\\summary.txt",
+        "transcript": "E:\\new\\Trendy\\data\\processed\\job_20251115_104048_7dd2d8\\analysis\\transcript.txt",
+        "summary": "E:\\new\\Trendy\\data\\processed\\job_20251115_104048_7dd2d8\\analysis\\summary.txt",
         "video": "E:\\new\\Trendy\\data\\processed\\video\\original.mp4",
         "audio": "E:\\new\\Trendy\\data\\processed\\audio\\audio.wav",
         "frames_folder": "E:\\new\\Trendy\\data\\processed\\frames"
