@@ -1,218 +1,237 @@
-# TrendyAI Project Implementation Plan
+# TrendyAI Market-Leading Execution Plan
 
-## 1) Project Goal
-Build a production-ready **AI video intelligence platform** that:
-- Ingests creator videos and channel context.
-- Performs multimodal analysis (audio, visual, text, metadata, trend context).
-- Produces actionable recommendations to improve CTR, retention, and discoverability.
-- Scales via cloud GPU workers (no dependency on local GPUs).
+This plan focuses on one outcome: **deliver materially better ROI for creators than competing tools**.
 
 ---
 
-## 2) Current-State Review (What Already Exists)
+## 1) North Star, Positioning, and Success Criteria
 
-### Backend foundations in place
-- FastAPI app with route wiring in `backend/main.py`.
-- Modules for:
-  - Video analysis pipeline (`/video/analyze`): upload, audio extraction, frame extraction, transcription, summarization, metadata.
-  - Content analysis pipeline (`/content/analyze`): transcript/summary generation, keywords/topics/sentiment, object detection, OCR, visual metrics.
-  - Channel context retrieval (`/channel/{channel_id}`): YouTube Data API integration.
-  - YouTube OAuth skeleton (`/auth/login`, `/auth/oauth2callback`).
+## 1.1 North Star
+Maximize creator growth outcomes per unit of production effort.
 
-### Data outputs already present
-- Processed job folders in `data/processed/...` with transcripts, summaries, frames, and analysis JSON artifacts.
+## 1.2 Positioning
+TrendyAI is not just analytics and not just AI writing. It is a **decision engine + execution system** for video performance.
 
-### Gaps identified
-- No real frontend implementation yet (`frontend/package.json` is empty).
-- Training/inference scripts are placeholders (`scripts/*.py` empty).
-- Several production concerns are missing: queueing, background workers, persistent DB schema, storage abstraction, auth hardening, model lifecycle, observability, and CI/CD.
-- Dependency setup is heavy and inconsistent in `backend/requirements.txt` (duplicates, mixed optional/runtime deps).
-- Some code-level issues likely to fail at runtime (e.g., mismatched transcription call signature, path coupling assumptions, no job state machine).
+## 1.3 Success criteria (what “better than market” means)
+- Time-to-actionable-report: < 5 min for standard videos.
+- Recommendation adoption rate: > 35%.
+- Measured uplift among adopters:
+  - +8–15% retention in first 30 seconds,
+  - +5–12% CTR improvement,
+  - +10% watch-time growth over baseline.
+- User retention: weekly active creators with recurring usage > 50%.
 
 ---
 
-## 3) Target Architecture
+## 2) Product Strategy: Value for Money
 
-## 3.1 Logical Architecture
-1. **Client apps** (web first, mobile-ready API).
-2. **API service** (FastAPI): request validation, auth, job creation, status retrieval.
-3. **Job queue** (Redis + RQ/Celery): decouple upload from inference.
-4. **Worker pools**:
-   - CPU workers: preprocessing, OCR, lightweight NLP.
-   - GPU workers: Whisper large-v3, CLIP/vision encoders, ranking models.
-5. **Storage**:
-   - Object storage (S3/R2/MinIO) for video/audio/frame artifacts.
-   - PostgreSQL for users, jobs, outputs, and recommendation history.
-   - Redis for queue/cache.
-6. **Trend Pattern Engine (TPE)**: independent trend crawler + feature service.
-7. **Recommendation service**: prompt templates + structured scoring output.
-8. **Observability**: logs, metrics, tracing, alerts.
+## 2.1 Product tiers
+- **Starter**: single creator, core analysis.
+- **Pro**: trend intelligence + deeper recommendations + A/B guidance.
+- **Team/Agency**: multi-seat, workflow controls, benchmark analytics.
 
-## 3.2 Cloud GPU Strategy (No local GPU required)
-Use on-demand GPU providers for inference/training:
-- **Inference options**: RunPod, Lambda, Vast.ai, Modal, Replicate (provider choice by cost/latency).
-- **Managed cloud**: AWS EC2 g5/g6, GCP L4/A100, Azure NC series.
-- **Recommended initial setup**:
-  - API + queue + DB on standard cloud VMs/managed services.
-  - GPU workers as autoscaled spot/on-demand nodes.
-  - Model artifacts in object storage + version metadata in DB.
+## 2.2 Value framework for each recommendation
+Every recommendation should include:
+1. what is wrong,
+2. where it appears (timestamp/asset),
+3. what to change,
+4. confidence,
+5. expected impact range,
+6. effort estimate.
+
+## 2.3 ROI surfaces in product
+- “If you apply top 3 edits, expected uplift = X.”
+- historical before/after improvements.
+- cost-impact leaderboard (highest return edits first).
 
 ---
 
-## 4) Implementation Phases
+## 3) Current-State Assessment (Repo)
 
-## Phase 0 — Repo Stabilization (Week 1)
-- Reorganize code layout and naming consistency.
-- Split dependencies into:
-  - `requirements/base.txt`
-  - `requirements/inference.txt`
-  - `requirements/dev.txt`
-- Add `.env.example` and centralized config validation.
-- Add strict linting/formatting (ruff, black, isort) and type checks (mypy optional).
-- Add test harness with `pytest` and smoke tests for APIs.
+## What exists
+- FastAPI backend wiring.
+- Video analysis endpoint pipeline.
+- Content analysis endpoint pipeline.
+- YouTube channel context + OAuth skeleton.
+- Artifact outputs in local data folders.
+
+## Key shortcomings
+- No production job queue/state machine.
+- No robust persistence models/migrations.
+- No frontend app.
+- No recommendation efficacy evaluation loop.
+- Placeholder training/inference scripts.
+
+---
+
+## 4) Target Architecture (Production)
+
+`Web App/API Clients → FastAPI → Redis Queue → CPU/GPU Workers → Postgres + Object Storage → Recommendation API → Analytics`
+
+### Core services
+1. **API Service**: auth, contracts, job orchestration.
+2. **Ingestion Service**: upload validation, storage, metadata.
+3. **Inference Workers**:
+   - CPU workers for lightweight analysis,
+   - GPU workers for ASR/vision/ranking.
+4. **Trend Pattern Engine (TPE)**:
+   - crawler jobs,
+   - trend feature store,
+   - trend context serving.
+5. **Recommendation Service**:
+   - structured generation,
+   - confidence and impact scoring,
+   - policy guardrails.
+6. **Outcome Measurement Service**:
+   - recommendation adoption,
+   - post-publish uplift attribution.
+
+---
+
+## 5) Phased Delivery Plan
+
+## Phase 0 — Stabilize Foundations (Week 1)
+- Dependency cleanup into layered requirements.
+- Config management with `.env.example` + validation.
+- Linting/testing baseline.
+- Basic API contract tests.
 
 **Exit criteria**
-- App starts reliably in clean environment.
-- `pytest` and lint pass in CI.
+- Clean install + reproducible app startup.
+- CI executes lint + tests on every PR.
 
-## Phase 1 — Job-Oriented Processing Backbone (Week 1–2)
-- Introduce `Job` model and lifecycle (`queued`, `processing`, `completed`, `failed`).
-- Replace inline processing endpoint with async workflow:
-  1) upload -> create job
-  2) enqueue job
-  3) worker executes pipeline
-  4) persist outputs + status
-- Abstract local filesystem paths behind storage service.
-- Add job status/result endpoints.
+## Phase 1 — Job Backbone and Reliability (Week 1–2)
+- Implement `AnalysisJob` lifecycle and queue worker processing.
+- Add retries, idempotency keys, and dead-letter handling.
+- Add progress events + status endpoints.
 
 **Exit criteria**
-- Long videos do not block API request lifecycle.
-- Multiple concurrent jobs can run safely.
+- Upload API is non-blocking.
+- Failure recovery works without data corruption.
 
-## Phase 2 — Core Multimodal Analyzer v1 (Week 2–4)
-- Harden existing modules:
-  - Whisper transcription chunking strategy.
-  - Summarization chunk-map-reduce for long transcripts.
-  - Frame sampling strategy tied to duration and scene changes.
-  - OCR/object detection confidence thresholding + deduplication.
-- Normalize analysis output into stable schema (`analysis_v1`).
-- Add quality scoring and recommendation placeholders.
+## Phase 2 — Recommendation Quality Core (Week 2–4)
+- Versioned output schemas (`analysis_v1`, `recommendation_v1`).
+- Evidence-binding for all recommendations.
+- Priority ranking by expected impact/effort.
+- Human-readable + machine-readable recommendation formats.
 
 **Exit criteria**
-- Deterministic JSON output schema for every completed job.
-- Baseline metric report available per job.
+- 100% recommendations contain evidence and confidence.
+- Internal reviewers rate > 80% recommendations as actionable.
 
-## Phase 3 — Trend Pattern Engine (TPE) v1 (Week 4–6)
-- Build daily crawler jobs for:
-  - YouTube trends (official API)
-  - Google Trends
-  - Reddit topic velocity
-- Build trend feature store (topic, growth rate, momentum, decay).
-- Expose internal API: `GET /trends/context?category=...&region=...`.
-- Link analyzer outputs to trend similarity scoring.
+## Phase 3 — Trend Pattern Engine v1 (Week 4–6)
+- Build daily trend crawlers and normalization jobs.
+- Add topic momentum/novelty/decay features.
+- Integrate trend context scoring into recommendation ranking.
 
 **Exit criteria**
-- Recommendations include trend-aware context and confidence.
+- Every report includes trend-fit section with confidence.
 
-## Phase 4 — Recommendation Engine v1 (Week 6–7)
-- Define recommendation schema:
-  - problem
-  - evidence
-  - action
-  - expected impact
-  - confidence
-- Build prompt templates using structured analysis + trend context.
-- Add safeguards against unsupported claims.
+## Phase 4 — Frontend MVP to Product v1 (Week 5–8)
+- Dashboard: upload, progress, report, recommendation checklist.
+- Edit workflow: assign/track completed suggestions.
+- Historical insights: compare uploads and outcomes.
 
 **Exit criteria**
-- Every recommendation is evidence-backed and machine-parseable.
+- Users can run full workflow without API docs.
 
-## Phase 5 — Frontend Dashboard v1 (Week 6–8)
-- Implement React dashboard modules:
-  - Upload manager
-  - Job status + progress
-  - Report view (scores, highlights, recommendations)
-  - Historical comparisons
-- Add auth flow and user-specific project views.
+## Phase 5 — Outcome Intelligence (Week 8–10)
+- Connect to post-publish metrics.
+- Build uplift attribution per adopted recommendation.
+- Add creator-specific learning loop (what works for this channel).
 
 **Exit criteria**
-- End-to-end flow from upload to insights in browser.
+- Product can prove measured value to paying users.
 
-## Phase 6 — MLOps + CI/CD + Production Readiness (Week 8–10)
-- CI: lint, test, build, deploy.
-- CD: staging then production with rollback.
-- Monitoring: Prometheus/Grafana + structured logs.
-- Security hardening: OAuth/JWT, secret management, rate limiting, signed URLs.
-- Data retention controls and compliance defaults.
+## Phase 6 — Scale, Security, and Enterprise Readiness (Week 10–12)
+- Multi-tenant controls and RBAC.
+- Audit logs and policy controls.
+- SLO-based autoscaling and on-call alerts.
+- Cost optimization program for GPU workloads.
 
 **Exit criteria**
-- Production environment with SLO dashboards and alerting.
+- Stable production operations with clear SLOs and cost KPIs.
 
 ---
 
-## 5) Workstreams and Ownership
+## 6) ML and Evaluation Strategy
 
-- **Platform/API**: FastAPI architecture, auth, contracts, DB models.
-- **ML/Inference**: transcript, vision, scoring models, optimization.
-- **Trend Intelligence**: crawlers, feature engineering, forecasting.
-- **Frontend**: UX, upload/report workflows.
-- **DevOps/MLOps**: infra, CI/CD, observability, cost controls.
+## 6.1 Evaluation layers
+1. **Component quality**: ASR WER, OCR precision, topic relevance.
+2. **Recommendation quality**: actionability score, evidence adequacy.
+3. **Business impact**: CTR/retention/watch-time uplift.
 
----
+## 6.2 Offline + online loop
+- Offline benchmark datasets for repeatable regressions.
+- Online A/B testing of recommendation templates and prioritization.
+- Continuous model/prompt tuning from outcome signals.
 
-## 6) Data & API Contracts (Initial)
-
-## 6.1 Core Entities
-- User
-- ChannelConnection
-- AnalysisJob
-- Artifact
-- AnalysisResult
-- Recommendation
-- TrendSnapshot
-
-## 6.2 Required Endpoints (v1)
-- `POST /jobs` (upload + create)
-- `GET /jobs/{id}` (status)
-- `GET /jobs/{id}/result` (analysis)
-- `GET /jobs/{id}/recommendations`
-- `GET /channel/{channel_id}`
-- `GET /trends/context`
+## 6.3 Guardrails
+- Avoid unsupported claims.
+- Confidence-calibrated outputs.
+- Fallback recommendations when evidence is weak.
 
 ---
 
-## 7) GPU Cost/Performance Plan
+## 7) Cloud GPU, Cost, and Performance Plan
 
-- Start with **single GPU worker pool** (L4 or A10 class).
-- Use autoscaling by queue depth and job age.
-- Prefer spot/preemptible where retry-safe.
-- Implement per-job cost telemetry (GPU minutes + model calls).
-- Optimize in this order:
-  1) batching
-  2) precision/quantization
-  3) model distillation
-  4) caching repeated features
+## 7.1 Infrastructure principle
+No hard dependency on local GPUs; use rentable cloud GPU pools.
 
----
+## 7.2 Initial setup
+- Start with L4/A10 class GPU pool for inference.
+- Route CPU-compatible jobs away from GPU.
+- Autoscale workers by queue length + response SLA.
 
-## 8) Definition of Done (Project-Level)
-
-1. Upload-to-insight flow works reliably for short and long videos.
-2. Analysis output schema is stable and versioned.
-3. Recommendations are trend-aware and evidence-grounded.
-4. Frontend dashboard supports upload, status, and full report display.
-5. Cloud deployment supports autoscaling GPU inference.
-6. CI/CD, monitoring, and security baselines are active.
+## 7.3 Cost optimization order
+1. Workload routing (CPU vs GPU).
+2. Batching and async pipelines.
+3. Quantization/distillation.
+4. Caching repeated computations.
+5. Provider optimization (spot/preemptible where safe).
 
 ---
 
-## 9) Immediate Next Sprint Backlog (Actionable)
+## 8) Go-to-Market Product Features That Increase Perceived Value
 
-1. Implement job queue + worker process abstraction.
-2. Add DB models + migrations for job/result lifecycle.
-3. Refactor current analysis pipeline into independently testable steps.
-4. Normalize file paths and artifact manifest format.
-5. Replace monolithic requirements file with layered dependency files.
-6. Build first frontend scaffold and connect to `/jobs` APIs.
-7. Add smoke tests for `/video/analyze`, `/content/analyze`, `/channel/{id}`.
+1. **Action checklist mode**: one-click “apply this first.”
+2. **What changed?** diff view between video versions.
+3. **Niche benchmark panels** vs competitor channels.
+4. **Trend timing alerts** (“publish now”, “wait”, “pivot angle”).
+5. **Agency workspace** for multi-client operations.
+6. **Weekly growth reports** auto-generated from outcomes.
+
+---
+
+## 9) Execution Governance
+
+## 9.1 Weekly operating cadence
+- Mon: roadmap + model quality review.
+- Wed: reliability/performance/cost review.
+- Fri: user outcome and adoption review.
+
+## 9.2 Decision dashboard
+Track these every week:
+- report latency,
+- recommendation adoption,
+- measured uplift,
+- GPU cost per report,
+- system failure rate,
+- user retention.
+
+## 9.3 Stop-doing rules
+- Do not ship features without measurable outcome hypothesis.
+- Do not increase model cost unless uplift justifies it.
+- Do not release recommendations without evidence linkage.
+
+---
+
+## 10) Next Sprint (Immediate Action Items)
+
+1. Implement async queue + `AnalysisJob` lifecycle.
+2. Add DB schema + migrations for users/jobs/results/recommendations.
+3. Refactor pipeline into composable steps with explicit contracts.
+4. Implement recommendation schema with evidence/impact/effort fields.
+5. Build dashboard MVP (upload, status, report, checklist).
+6. Add baseline evaluation suite and weekly scorecard.
 

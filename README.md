@@ -1,211 +1,185 @@
 # TrendyAI (AutoInsightAI)
 
-TrendyAI is an AI-powered creator intelligence platform that analyzes uploaded videos, channel context, and internet trend signals to generate practical recommendations for better **CTR**, **retention**, and **discoverability**.
+TrendyAI is an AI-powered **creator growth operating system** that helps creators and teams make better videos *before* they publish. It combines multimodal video analysis, channel intelligence, and real-time trend forecasting to deliver concrete actions that improve **CTR, retention, watch time, and conversion**.
 
-This README is the unified project description that combines:
-- your original product/architecture vision,
-- the Trend Pattern Engine (TPE) concept,
-- and the actual codebase status already implemented in this repository.
+> Mission: Give creators measurable business outcomes—not just AI summaries.
 
 ---
 
-## 1) Product Vision
+## 1) Why TrendyAI Will Beat Existing Tools
 
-### Objective
-Build a multimodal analysis system that helps creators answer:
-- Is my hook strong enough?
-- Is the emotional/audio delivery engaging?
-- Do my title/tags/topic match what is currently trending?
-- What exact changes should I make before publishing?
+Most tools in the market do one of three things poorly:
+1. show basic analytics after publishing,
+2. generate generic advice without evidence,
+3. or optimize only one modality (title or thumbnail only).
 
-### Core Flow
-`Upload video → Multimodal analysis pipeline → Trend/context matching → Recommendation generator → Actionable report`
-
-Target experience: creator uploads content and receives a structured report with suggested fixes and expected impact.
+TrendyAI is designed to be better by default:
+- **Pre-publish intelligence**: predict weaknesses before upload.
+- **Evidence-linked recommendations**: every suggestion ties to transcript/video/timing/trend signals.
+- **Execution-first output**: “what to change, where, why, and expected impact.”
+- **Creator ROI focus**: score improvements in expected views/watch time per edit effort.
+- **Learning loop**: outcomes from edited videos feed model improvement.
 
 ---
 
-## 2) Unified System Architecture
+## 2) Product Outcomes (Value for Money)
 
-### High-level architecture
-`Client App → FastAPI Gateway → Queue → CPU/GPU Workers → Storage + DB → Recommendation API → Dashboard`
+Users should clearly see value from the first week.
 
-### Layers
-| Layer | Preferred Technology | Purpose |
+### Core promised outcomes
+- Faster iteration cycle (idea → edit → publish).
+- Better hooks in first 3–15 seconds.
+- Better topic-title-thumbnail alignment.
+- Higher consistency across uploads.
+- Better hit rate on trend-relevant content.
+
+### Value metrics to show customers
+- **Predicted retention uplift** from recommended edits.
+- **Expected CTR delta** from title/thumbnail suggestions.
+- **Trend timing score** (too early, peak, too late).
+- **Recommendation adoption rate** and its result over time.
+- **Cost-to-impact ratio** per recommendation (time/edit effort vs gain).
+
+---
+
+## 3) End-to-End Product Flow
+
+`Idea/Video Upload → Multimodal Analysis → Trend Context Matching → Recommendation Engine → Edit Checklist → Post-publish Feedback Loop`
+
+### Creator-facing experience
+1. Upload video (or connect channel).
+2. Receive a ranked set of improvements (hook, pacing, title/metadata, visual clarity, emotional delivery, trend fit).
+3. Apply edits with timestamped guidance.
+4. Track outcomes against baseline after publish.
+
+---
+
+## 4) Unified Architecture
+
+`Client App → FastAPI API Layer → Queue → CPU/GPU Workers → Storage + DB → Recommendation Service → Dashboard`
+
+| Layer | Technology (target) | Purpose |
 |---|---|---|
-| Frontend | React (Next.js), optional Flutter/React Native later | Upload videos, monitor jobs, view reports |
-| API Gateway | FastAPI | REST/WebSocket APIs, auth, validation |
-| Queue | Redis + Celery/RQ | Decouple uploads from long-running inference |
-| Worker Fleet | Cloud GPU + CPU workers | Run ASR, NLP, vision, ranking, recommendations |
-| Object Storage | S3 / MinIO / R2 | Raw uploads + derived artifacts |
-| Database | PostgreSQL (+ Redis cache) | Users, jobs, metadata, results, recommendation history |
-| Notifications | WebSocket / push | Real-time job completion updates |
-| Monitoring | Prometheus + Grafana + logs | Reliability and performance tracking |
+| Frontend | Next.js web app (mobile-ready API) | Upload, reports, experiments, history |
+| API | FastAPI | Auth, contracts, orchestration, status |
+| Queue | Redis + Celery/RQ | Async jobs + retries |
+| Workers | CPU + cloud GPU pools | Transcription, vision, ranking, inference |
+| Storage | S3/MinIO/R2 | Video/audio/frames/artifacts |
+| DB | PostgreSQL (+ Redis cache) | Jobs, users, metrics, recommendations |
+| Trend Engine | Crawler + feature store + serving API | Trend momentum + context |
+| Observability | Prometheus/Grafana + logs + traces | Reliability/cost/performance |
 
 ---
 
-## 3) Core AI Pipeline (Product Design)
+## 5) AI/ML Capability Stack
 
-1. **Ingestion**
-   - Upload video or connect channel.
-2. **Preprocessing**
-   - Extract audio (16 kHz WAV), sample frames/scenes, collect metadata.
-3. **Feature extraction (multimodal)**
-   - Speech-to-text, summarization, sentiment/tone, object/OCR/visual quality features.
-4. **Trend correlation**
-   - Compare video topics/features with trend index (TPE).
-5. **Scoring**
-   - Hook quality, clarity, relevance, likely performance indicators.
-6. **Recommendation generation**
-   - Evidence-based recommendations with confidence and impact hints.
-7. **Report output**
-   - Persist JSON result + dashboard-ready response.
+### Multimodal Analyzer
+- Speech-to-text and semantic segmentation.
+- Long-form summarization and chapter-level extraction.
+- Sentiment and delivery-energy profiling.
+- Object/OCR scene signal extraction.
+- Visual quality and pacing analysis.
 
----
+### Trend Pattern Engine (TPE)
+- Crawls trend sources (YouTube, Google Trends, Reddit; optional additional legal sources).
+- Builds trend velocity, momentum, novelty, and decay features.
+- Provides trend context APIs by niche, geo, and time horizon.
 
-## 4) Model Stack (Target + Practical)
-
-### Planned/target components
-- **Thumbnail/visual appeal**: CLIP / vision encoders.
-- **Hook effectiveness (0–15s)**: temporal features + ASR context.
-- **Audio sentiment/clarity**: ASR + sentiment/emotion signals.
-- **Topic & SEO relevance**: embedding similarity + keyword relevance.
-- **Performance predictor**: multimodal ranking/classification model.
-- **Recommendation model**: LLM prompt engine over structured evidence.
-
-### Currently implemented in repo (prototype)
-- Whisper-based transcription.
-- BART summarization.
-- Keyword extraction (KeyBERT).
-- Topic extraction (MiniLM embeddings).
-- Sentiment analysis (TextBlob + VADER).
-- Object detection (YOLO-NAS via super-gradients).
-- OCR extraction (EasyOCR).
-- Basic visual metrics (brightness, sharpness, motion).
+### Recommendation Engine
+- Converts signals into structured actions:
+  - problem,
+  - evidence,
+  - recommended change,
+  - expected impact,
+  - confidence.
+- Prioritizes actions by expected outcome per effort.
 
 ---
 
-## 5) Trend Pattern Engine (TPE)
+## 6) Current Repository State (Reality Check)
 
-TPE is the system that gives TrendyAI internet-wide situational awareness.
+The backend prototype already includes:
+- `POST /video/analyze`: upload, audio extraction, frame extraction, transcription, summarization, artifacts.
+- `GET /content/analyze`: transcript/summary, keywords/topics/sentiment, object detection, OCR, visual stats.
+- `GET /channel/{channel_id}`: YouTube channel + uploads context.
+- `GET /auth/login`, `GET /auth/oauth2callback`: YouTube OAuth skeleton.
 
-### Role
-- Continuously ingest trend signals (YouTube, Google Trends, Reddit, and optionally TikTok/IG sources where legal/available).
-- Build topic velocity, momentum, and decay features.
-- Serve trend context back to analyzer/recommendation services.
-
-### Separation of concerns
-- **Core Analyzer**: analyzes the user’s content.
-- **TPE**: analyzes the internet trend landscape.
-- **Recommendation Layer**: combines both to suggest actions.
-
-### TPE pipeline
-`Trend Crawlers → Trend Preprocessor → Pattern Miner → Topic Vector Store → Trend Predictor → Trend Context API`
+Data outputs already exist under:
+- `data/raw/`
+- `data/processed/job_.../`
+- `data/processed/analysis/`
 
 ---
 
-## 6) What the Repository Already Has (Current State)
+## 7) What Must Improve to Become Market-Leading
 
-The backend prototype is present and runnable with FastAPI.
-
-### Existing API modules
-- `POST /video/analyze`
-  - saves upload,
-  - extracts audio,
-  - extracts frames,
-  - transcribes,
-  - summarizes,
-  - writes per-job artifacts/JSON.
-- `GET /content/analyze?job_path=...`
-  - transcript/summary,
-  - keywords/topics/sentiment,
-  - object detection,
-  - OCR,
-  - visual feature stats.
-- `GET /channel/{channel_id}`
-  - YouTube channel details + uploads retrieval.
-- `GET /auth/login` and `GET /auth/oauth2callback`
-  - YouTube OAuth integration skeleton.
-
-### Data/artifact structure already visible
-- Raw uploads in `data/raw/`.
-- Processed job outputs under `data/processed/job_.../`.
-- Analysis JSON artifacts in `data/processed/analysis/`.
+1. **User-facing product quality**
+   - Build polished dashboard and guided edit workflow.
+   - Add recommendation explainability and confidence.
+2. **System reliability**
+   - Move to queue-driven async architecture.
+   - Add robust retries, idempotency, and job state lifecycle.
+3. **Decision quality**
+   - Add rigorous offline/online evaluation for recommendations.
+   - Introduce A/B testing framework for recommendation templates.
+4. **Business value visibility**
+   - Expose ROI dashboards per creator/team.
+   - Link recommendation adoption to post-publish outcomes.
+5. **Enterprise readiness**
+   - Multi-tenant access control, audit logs, data retention policies.
 
 ---
 
-## 7) Gaps to Complete the Product
+## 8) Cloud GPU Strategy (No Local GPU Dependency)
 
-- Frontend app is not implemented yet (`frontend/package.json` currently empty).
-- `scripts/` training/inference/preprocess/evaluate files are placeholders.
-- Processing is mostly request-bound; queue/worker job orchestration is still needed.
-- Persistent DB models and migrations are not yet implemented.
-- Production-grade auth, rate limiting, observability, and retention policies are pending.
-- Dependency management needs cleanup (split runtime/inference/dev requirements).
+TrendyAI is designed to run with rentable GPUs online.
 
----
+### Practical setup
+- API/DB/queue on general compute.
+- GPU inference on autoscaled pools.
+- Model/artifact storage in object storage.
 
-## 8) GPU Strategy (Cloud-first, No Local GPU Dependency)
-
-You can run this project without local GPU by renting cloud GPUs for heavy workloads.
-
-### Recommended setup
-- API, queue, DB on regular cloud compute.
-- GPU workers on on-demand/spot instances.
-- Object storage for artifacts and model files.
-
-### Provider options
+### Providers
 - RunPod, Lambda, Vast.ai, Modal, Replicate,
-- or AWS/GCP/Azure GPU instances (L4/A10/A100 class depending on workload).
+- AWS/GCP/Azure GPU instances.
 
-### Cost/perf approach
-1. Start with one GPU worker pool.
-2. Autoscale based on queue depth and job age.
-3. Add batching and quantization before increasing model size/cost.
-4. Track per-job GPU minutes and model-call cost.
-
----
-
-## 9) Security, Compliance, and Operations (Target)
-
-- OAuth2 + JWT for user auth and channel linking.
-- HTTPS in transit + encryption at rest.
-- Signed URLs for private artifact access.
-- Configurable retention/deletion windows for user video data.
-- Structured logging with PII redaction.
-- Monitoring + alerting for API latency, queue lag, worker failure rates, and model errors.
+### Cost governance
+- Per-job GPU cost telemetry.
+- Autoscale by queue lag and SLA targets.
+- Use batching + quantization before scaling spend.
 
 ---
 
-## 10) Deployment Direction
+## 9) Security and Trust
 
-- Containerized services (API + workers).
-- CI/CD via GitHub Actions.
-- Kubernetes or managed container platform for scaling.
-- Redis for queueing/caching.
-- PostgreSQL for relational persistence.
-- S3-compatible object storage for media artifacts.
+- OAuth2 + JWT authentication.
+- Encryption in transit and at rest.
+- Signed URLs for private artifacts.
+- Configurable content retention/deletion windows.
+- PII-aware logging and redaction.
+- Compliance-ready architecture path (SOC2-friendly controls).
 
 ---
 
-## 11) Project Roadmap
+## 10) Competitive Moat Strategy
 
-A detailed, phase-by-phase implementation roadmap is maintained in:
+To become “far better than market,” TrendyAI needs moats beyond raw model quality:
+- **Outcome graph**: proprietary mapping of edit-type → performance-lift by niche.
+- **Creator memory**: long-term understanding of each channel’s voice and winning patterns.
+- **Trend + personalization fusion**: recommendations based on global trends *and* creator identity.
+- **Speed moat**: fast turnaround even for long videos.
+- **Trust moat**: transparent, evidence-backed recommendations.
 
+---
+
+## 11) Roadmap and Execution Plan
+
+Full implementation instructions and phases are in:
 - [`plan.md`](./plan.md)
 
-This includes:
-- architecture stabilization,
-- queue/job lifecycle,
-- multimodal analyzer hardening,
-- TPE rollout,
-- recommendation engine design,
-- frontend dashboard delivery,
-- MLOps + production readiness.
-
 ---
 
-## 12) Quickstart (Prototype Backend)
+## 12) Quickstart (Current Prototype)
 
 ```bash
 cd backend
@@ -213,27 +187,17 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-Open API docs at:
+API docs:
 - `http://localhost:8000/docs`
 
 ---
 
-## 13) Immediate Engineering Priorities
+## 13) Immediate Priorities
 
-1. Add async job model (`queued`, `processing`, `completed`, `failed`).
-2. Move analysis execution to queue workers.
-3. Define stable versioned output schema (`analysis_v1`).
-4. Add DB models/migrations and artifact manifest tracking.
-5. Build frontend MVP (upload, status, report view).
-6. Add CI checks (lint, tests, build) and staging deployment.
-
----
-
-## 14) Summary
-
-TrendyAI combines a **multimodal content analyzer** and a **global trend intelligence engine** to provide creators with concrete, high-impact recommendations.
-
-- The vision and architecture are now fully documented.
-- A meaningful backend prototype already exists.
-- The remaining work is primarily productization: orchestration, persistence, frontend, and operational hardening.
+1. Implement async job system (`queued`, `processing`, `completed`, `failed`).
+2. Add PostgreSQL models + migrations for jobs/results/recommendations.
+3. Introduce stable versioned result schema (`analysis_v1`, `recommendation_v1`).
+4. Ship web dashboard MVP (upload, status, report, history).
+5. Add eval suite measuring recommendation quality and business impact.
+6. Stand up cloud deployment with cost + reliability monitoring.
 
