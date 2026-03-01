@@ -1,264 +1,158 @@
-# TrendyAI Engineering Plan
+# Trendy AI Platform - Engineering Implementation Plan
 
-A subsystem-first implementation plan aligned with the original AutoInsightAI design.
-
----
-
-## 1. Engineering Design Process (How We Build)
-
-Use this design process for every major feature/model update.
-
-## Step 1 — Problem Definition
-- Define exactly which pipeline stage is being improved.
-- Define required input/output schema updates.
-- Define success metrics and failure modes.
-
-## Step 2 — System Contract Design
-- Write or update data contracts first:
-  - `artifact_manifest_v1`
-  - `analysis_v1`
-  - `trend_context_v1`
-  - `recommendation_v1`
-- Add backward compatibility/version policy.
-
-## Step 3 — Subsystem Implementation
-- Implement behind clear interfaces.
-- Keep model logic isolated from API logic.
-- Ensure each stage is independently testable.
-
-## Step 4 — Evaluation & Validation
-- Unit tests for deterministic utilities.
-- Integration tests for stage-to-stage contract compatibility.
-- Golden sample regression tests for inference outputs.
-
-## Step 5 — Release & Observability
-- Stage rollout with metrics dashboards.
-- Monitor latency, error rates, and output-quality drift.
+This plan implements the subsystem blueprint in the README using explicit modules (A–Q) and production pipeline stages.
 
 ---
 
-## 2. Target System Blueprint
+## 1) Design Process (Senior Engineering Workflow)
 
-## 2.1 Core Apps
-1. API Gateway
-2. Ingestion & Preprocessing
-3. Core Multimodal Analyzer
-4. Trend Pattern Engine (TPE)
-5. Recommendation Engine
-6. Outcome & Feedback Service
-
-## 2.2 Shared Subsystems
-- Job queue/orchestrator
-- Object storage + DB
-- Model serving/runtime router
-- Monitoring/tracing/logging
-- Auth/security controls
+1. **Define contract first** for each stage (input schema, output schema, failure states).
+2. **Build as independent subsystem** with clear interface.
+3. **Add deterministic tests** (unit + integration + regression).
+4. **Deploy behind queue orchestration** (no heavy work in API request path).
+5. **Instrument** latency, error rate, and quality drift metrics.
 
 ---
 
-## 3. Pipeline Contracts (Must-Have)
+## 2) Target Modules and Delivery Order
 
-## 3.1 artifact_manifest_v1
-Contains deterministic pointers to all artifacts produced by preprocessing.
+### Phase A-B Foundation (existing -> harden)
+- **A: Channel Context (`api/channel_context`)**
+- **B: Video Analyzer (`api/video_analyzer`)**
 
-Required fields:
-- job_id
-- source_video_uri
-- audio_uri
-- frame_uris
-- metadata_uri
-- checksums
-- created_at
+### Phase C-E Data Intelligence (new)
+- **C: Trend Scraper**
+- **D: Metadata Extractor**
+- **E: Audience Tracker**
 
-## 3.2 analysis_v1
-Contains model outputs from audio/text/visual/temporal analyzers.
+### Phase F-K Model Layer (new package)
+- **F: NLP Models**
+- **G: Vision Models**
+- **H: Audio Models**
+- **I: Multimodal Fusion**
+- **J: OCR Model Runtime**
+- **K: Embedding/Ranking Layer**
 
-Required sections:
-- transcript + timestamps
-- summary
-- keywords/topics
-- sentiment/emotion
-- visual detections + OCR
-- hook/pacing features
-- module-level confidence
+### Phase L-P Recommendation Layer (new package)
+- **L: Title/Tag Recommender**
+- **M: Thumbnail Recommender**
+- **N: Publishing Time Optimizer**
+- **O: Trend Alignment Recommender**
+- **P: Retention Recommender**
 
-## 3.3 trend_context_v1
-Contains trend features used during recommendation.
-
-Required sections:
-- trending_topics
-- momentum_scores
-- novelty_index
-- niche_context
-- freshness/confidence
-
-## 3.4 recommendation_v1
-Contains actionable outputs.
-
-Required sections:
-- recommendation_id
-- problem
-- evidence_refs
-- action
-- expected_effect
-- priority
-- confidence
+### Phase Q Learning Layer (new)
+- **Q: Feedback Loop + Retraining Orchestrator**
 
 ---
 
-## 4. Detailed Subsystem Plan
+## 3) Core Apps and Pipelines
 
-## 4.1 API Gateway
-- Add job-centric APIs.
-- Add idempotency keys and request validation.
-- Add WebSocket/SSE for progress updates.
+## 3.1 Runtime Pipeline (online)
+1. `POST /jobs` creates job.
+2. Preprocess media artifacts.
+3. Run module B + F/G/H/J.
+4. Run module C for trend context.
+5. Run module I/K fusion.
+6. Generate recommendations L–P.
+7. Save results and notify frontend.
 
-## 4.2 Ingestion/Preprocessing
-- Standardize FFmpeg/media pipeline.
-- Deterministic frame sampling policy.
-- Artifact manifest generation + checksum validation.
+## 3.2 Scheduled Pipeline (offline)
+- Trend scraping refresh (C).
+- Metadata indexing refresh (D).
+- Audience metric sync (E).
+- Model training/evaluation cycle (F–K + Q).
 
-## 4.3 Core Analyzer
-- ASR chunking for long content.
-- Long-text summarization strategy.
-- NLP features (topics/keywords/sentiment).
-- Vision features (objects/OCR/visual quality).
-- Temporal features (hook window).
-
-## 4.4 TPE
-- Build daily crawlers and normalizer.
-- Implement topic vectorization and momentum scoring.
-- Serve trend context by niche/region/time.
-
-## 4.5 Recommendation Engine
-- Build rules + model hybrid recommendation stack.
-- Strict evidence binding and confidence calibration.
-- Priority ranking by expected impact.
-
-## 4.6 Outcome Service
-- Track recommendation adoption.
-- Correlate adopted actions with post-publish metrics.
-- Produce training signals for future tuning.
+## 3.3 Feedback Pipeline
+- Collect adopted recommendations.
+- Compare predicted vs actual outcomes.
+- Feed correction signals into Q retraining jobs.
 
 ---
 
-## 5. Phase-by-Phase Delivery
+## 4) Required Data Contracts
 
-## Phase 0 — Repository & Runtime Stabilization (Week 1)
-- Dependency segmentation (`base/inference/dev`).
-- Centralized config validation.
-- Baseline CI (lint + tests).
+## Contract 1: `artifact_manifest_v1`
+- `job_id`, source URI, audio URI, frame URIs, metadata URI, checksums, timestamps.
 
-**Exit criteria**
-- Fresh setup works reliably.
-- CI gates active.
+## Contract 2: `analysis_v1`
+- transcript, summary, keywords/topics, sentiment, visual detections, OCR, timing/hook features, confidences.
 
-## Phase 1 — Job Orchestrator & Contracts (Week 1–2)
-- Queue integration and state machine.
-- Implement `artifact_manifest_v1`.
-- Add job/result DB models.
+## Contract 3: `trend_context_v1`
+- trending topics, momentum, novelty, niche/region context, freshness/confidence.
 
-**Exit criteria**
-- Async processing works with retries.
+## Contract 4: `recommendation_v1`
+- recommendation id, module source (L/M/N/O/P), evidence refs, action text, priority, confidence.
 
-## Phase 2 — Analyzer Hardening (Week 2–4)
-- Refactor analyzer into independent stage modules.
-- Implement `analysis_v1` with confidence fields.
-- Add integration tests with golden samples.
-
-**Exit criteria**
-- Stable deterministic outputs across test media set.
-
-## Phase 3 — TPE Buildout (Week 4–6)
-- Crawler jobs + normalization.
-- Trend scoring and context API.
-- Implement `trend_context_v1`.
-
-**Exit criteria**
-- Analyzer can request and consume trend context per job.
-
-## Phase 4 — Recommendation Engine (Week 6–8)
-- Implement recommendation generation contract.
-- Implement `recommendation_v1`.
-- Add policy checks for unsupported recommendations.
-
-**Exit criteria**
-- All recommendations are evidence-backed and structured.
-
-## Phase 5 — Feedback Loop + Evaluation (Week 8–10)
-- Build adoption/outcome instrumentation.
-- Add periodic evaluation reports.
-- Create retraining/prompt tuning hooks.
-
-**Exit criteria**
-- Closed-loop learning operational.
-
-## Phase 6 — Production Operations (Week 10–12)
-- Autoscaling and capacity policies.
-- SLO dashboard + alerts.
-- Security hardening and retention automation.
-
-**Exit criteria**
-- Production-ready reliability and operational visibility.
+## Contract 5: `feedback_event_v1`
+- recommendation id, applied/not applied, publish timestamp, outcome deltas.
 
 ---
 
-## 6. Testing Strategy (Engineering)
+## 5) Infrastructure Plan
 
-## 6.1 Unit Tests
-- Media utilities
-- Schema validators
-- Text/feature utility functions
-
-## 6.2 Integration Tests
-- End-to-end from job creation to result retrieval.
-- Contract validation between each stage output/input.
-
-## 6.3 Regression Tests
-- Golden media dataset.
-- Compare output drift by schema + key score deltas.
-
-## 6.4 Operational Tests
-- Queue backpressure behavior.
-- Worker crash/retry recovery.
-- Storage failure fallback behavior.
+- **API Layer:** FastAPI service.
+- **Queue:** Redis + worker runner (Celery/RQ).
+- **DB:** PostgreSQL for jobs/results/feedback.
+- **Object Store:** S3/MinIO for artifacts.
+- **GPU Compute:** Vast.ai worker pool for heavy modules.
+- **Monitoring:** centralized logs + metrics dashboard.
 
 ---
 
-## 7. MLOps and Model Lifecycle
+## 6) 12-Week Delivery Timeline
 
-- Model version metadata in DB.
-- Promotion flow: dev -> staging -> prod.
-- Shadow runs for new models before full rollout.
-- Drift monitoring on transcription/topic/recommendation quality.
+### Weeks 1-2
+- Add `POST /jobs`, async queue, job lifecycle states.
+- Harden existing A/B modules and file contracts.
+
+### Weeks 3-4
+- Implement C (trend scraper) and D (metadata extractor).
+- Add normalized trend store schema.
+
+### Weeks 5-6
+- Implement F/G/H/J core model wrappers and inference interfaces.
+- Introduce I fusion output contract.
+
+### Weeks 7-8
+- Implement L/M/O recommenders first (highest impact).
+- Add recommendation ranking pipeline using K embeddings.
+
+### Weeks 9-10
+- Implement N/P recommenders and E audience tracker.
+- Start Q feedback-loop event collection.
+
+### Weeks 11-12
+- Automate retraining with Q.
+- Finalize dashboards, observability, and production hardening.
 
 ---
 
-## 8. Infrastructure Plan
+## 7) Testing and Validation Strategy
 
-## 8.1 Compute Split
-- CPU nodes: preprocessing and lightweight analysis.
-- GPU nodes: heavy ASR/vision/embedding inference.
+- **Unit tests:** utilities, schema validation, text/audio/vision helpers.
+- **Integration tests:** full job flow from ingestion to recommendation.
+- **Regression tests:** fixed sample videos to detect drift.
+- **Operational tests:** queue backpressure, worker crash recovery, storage failures.
 
-## 8.2 Cloud Runtime
-- Run in containerized services.
-- Queue-driven autoscaling.
-- Object storage for artifacts.
-
-## 8.3 Cost Controls
-- Stage-level timing and resource metrics.
-- Route jobs to minimum required compute tier.
-- Batch compatible inference workloads.
+Acceptance gate: no module promoted without contract compliance and integration pass.
 
 ---
 
-## 9. Immediate Engineering Tasks
+## 8) Risks and Mitigations
 
-1. Implement `POST /jobs` + async queue processing.
-2. Add DB schema and migrations for jobs/artifacts/results.
-3. Build and enforce schema validation for v1 contracts.
-4. Refactor current analyzer code into stage modules.
-5. Implement first TPE crawler + trend context endpoint.
-6. Implement first structured recommendation engine.
-7. Add integration tests across full pipeline.
+1. **Long inference latency** → chunking, batching, async workers, GPU autoscaling.
+2. **Model inconsistency across modules** → contract versioning + fusion normalization.
+3. **Trend noise quality** → source weighting + freshness scoring + dedupe.
+4. **Feedback sparsity** → explicit frontend UX prompts to capture adoption events.
 
+---
+
+## 9) Immediate Next Tasks (Action List)
+
+1. Implement queue-backed `POST /jobs` and status endpoints.
+2. Create contracts package and schema validators.
+3. Build module C scaffold (`backend/api/trend_scraper/`).
+4. Build module D scaffold (`backend/api/metadata_extractor/`).
+5. Split model wrapper package for F–K.
+6. Create recommender package skeleton L–P.
+7. Define feedback event schema and ingestion endpoint for Q.

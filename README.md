@@ -1,250 +1,195 @@
-# TrendyAI / AutoInsightAI
+# Trendy AI Platform - Project Description
 
-Technical design document for building a production-grade multimodal video analysis system.
-
-This README is intentionally engineering-first and follows your original architecture direction: **core analyzer + trend engine + recommendation engine**, with clear subsystem boundaries and pipeline contracts.
+Trendy is an AI-powered platform designed to analyze, optimize, and predict trends in video content. The system integrates automated AI pipelines, multimodal analysis, and intelligent recommendations to maximize content performance insights. It leverages GPU acceleration (e.g., Vast.ai) for heavy AI computations while providing a responsive frontend dashboard for actionable analytics.
 
 ---
 
-## 1. System Goal
+## Directory & Subsystem Overview
 
-Build an AI platform that ingests creator videos and channel context, runs multimodal analysis (audio/video/text/metadata), fuses results with trend intelligence, and outputs structured recommendations.
+### 1. `backend/`
 
-Core flow:
+The backend handles all AI computations, API logic, and data orchestration. It is modular to support scalable AI pipelines.
 
-`Upload → Preprocess → Multimodal Feature Extraction → Trend Correlation → Recommendation Generation → Report API`
+#### 1.1 `api/`
 
----
+Contains all endpoint modules. Each module encapsulates a functional unit of the Trendy system:
 
-## 2. Core Applications (Top-Level Services)
+- **`channel_context/` (Module A)**  
+  - **Function:** Retrieves YouTube channel metadata, subscription stats, and historical video data.  
+  - **Inputs:** Channel ID, OAuth credentials.  
+  - **Process:** Uses YouTube API to fetch channel info; normalizes and stores in persistence layer.  
+  - **Outputs:** Channel overview, subscriber growth metrics, recent uploads.  
+  - **Automation:** Periodic updates can refresh channel statistics automatically.
 
-The system should be split into explicit applications/services, each with a single responsibility.
+- **`video_analyzer/` (Module B)**  
+  - **Function:** Analyzes uploaded or scraped videos.  
+  - **Inputs:** Video URL or file.  
+  - **Process:**  
+    - Extracts frames, audio, and metadata.  
+    - Feeds artifacts to AI models for frame OCR, object signals, transcript, and summary.  
+  - **Outputs:** Video scorecards (visual quality, engagement likelihood, speech clarity).  
+  - **Automation:** Runs asynchronously for bulk video analysis (target architecture).
 
-## 2.1 API Gateway App
-**Purpose**
-- Public entrypoint for clients.
-- Handles auth, request validation, rate limiting, job creation, status retrieval.
+- **`trend_scraper/` (Module C, planned)**  
+  - **Function:** Scrapes trending content across platforms.  
+  - **Inputs:** Platform endpoints (YouTube, social media), keywords.  
+  - **Process:**  
+    - Collects trending videos, hashtags, and topics.  
+    - Uses NLP modules to classify trends.  
+  - **Outputs:** Ranked list of trending topics, emerging tags.  
+  - **Automation:** Scheduled scraping every few hours; incremental updates stored in `data/processed`.
 
-**Owns**
-- REST/WebSocket contracts.
-- Job orchestration API only (not heavy inference).
+- **`metadata_extractor/` (Module D, planned)**  
+  - **Function:** Pulls structured metadata from videos.  
+  - **Inputs:** Video file or URL.  
+  - **Process:**  
+    - Extracts captions, titles, tags, descriptions.  
+    - Cleans text via preprocessing scripts.  
+    - Generates embeddings via NLP models.  
+  - **Outputs:** Searchable metadata and semantic vectors.
 
-**Key endpoints (target)**
-- `POST /jobs` (create analysis job)
-- `GET /jobs/{job_id}` (status)
-- `GET /jobs/{job_id}/result` (full analysis)
-- `GET /jobs/{job_id}/recommendations`
+- **`audience_tracker/` (Module E, planned)**  
+  - **Function:** Monitors audience interaction.  
+  - **Inputs:** Video analytics (views, likes, comments).  
+  - **Process:** Computes engagement metrics, sentiment analysis, retention curves.  
+  - **Outputs:** Interactive dashboards on viewer behavior.
 
----
+- **`ai_models/` (Modules F–K, planned package)**  
+  - **Function:** Core intelligence layer for predictions.  
+  - **Modules:**  
+    - **F:** NLP for title/tag generation, sentiment, topic classification.  
+    - **G:** Vision for thumbnail scoring, OCR on frames, content recognition.  
+    - **H:** Audio for speech clarity, emotion, pacing analysis.  
+    - **I:** Multimodal fusion combining text, video, audio for performance prediction.  
+    - **J:** OCR specialization for frame-level text extraction.  
+    - **K:** Recommendation embeddings and retrieval signals.  
+  - **Automation:** Runs on GPU instances; modules operate in parallel to optimize throughput.
 
-## 2.2 Ingestion & Preprocessing App
-**Purpose**
-- Normalize uploaded media and build deterministic artifacts.
+- **`recommenders/` (Modules L–P, planned package)**  
+  - **Function:** Provides actionable recommendations.  
+  - **Modules:**  
+    - **L:** Title and tag suggestions.  
+    - **M:** Thumbnail optimization.  
+    - **N:** Publishing time & frequency optimization.  
+    - **O:** Trend alignment suggestions.  
+    - **P:** Viewer retention recommendations.  
+  - **Outputs:** Ranked suggestions for creators; integrated into frontend dashboards.
 
-**Pipeline responsibilities**
-1. Validate media format + duration constraints.
-2. Store original asset in object storage.
-3. Extract audio (`16kHz WAV`).
-4. Extract key frames / scene samples.
-5. Extract video metadata (duration/fps/resolution).
-6. Emit standardized artifact manifest.
+- **`feedback_loop/` (Module Q, planned)**  
+  - **Function:** Continuously refines models using incoming data.  
+  - **Process:**  
+    - Tracks model predictions vs actual performance.  
+    - Retrains AI models periodically using `scripts/train_model.py`.  
+  - **Automation:** Closed-loop feedback pipeline for adaptive learning.
 
-**Outputs**
-- `artifact_manifest.json`
-- `audio.wav`
-- `frames/*`
-- `metadata.json`
+#### 1.2 `core/`
 
----
+Handles essential utilities:
 
-## 2.3 Core Multimodal Analyzer App
-**Purpose**
-Run model inference over text/audio/visual streams.
+- **`database.py`** – Stores raw and processed data (PostgreSQL and/or document storage).  
+- **`config.py`** – Loads environment variables, API keys, and runtime configurations.  
+- **`logger.py`** – Centralized logging for debugging and audit trails.  
+- **`auth.py` / `youtube_auth.py`** – Google/YouTube OAuth and token workflows.  
 
-**Subsystems**
-- **ASR subsystem**: transcript + timestamps.
-- **NLP subsystem**: summary, keywords, topic clusters, sentiment/emotion.
-- **Vision subsystem**: object detection, OCR text, visual quality stats.
-- **Temporal subsystem**: hook-phase analysis (0–15s), pacing/motion changes.
+#### 1.3 `main.py`
 
-**Output contract**
-`analysis_v1.json`
-- transcript, summary, topics, keywords
-- sentiment/emotion profile
-- visual detections + OCR
-- temporal/hook features
-- confidence scores per module
-
----
-
-## 2.4 Trend Pattern Engine (TPE) App
-**Purpose**
-Continuously build a machine-readable global trend index.
-
-**Important**
-TPE does **not** analyze a user video directly; it provides context to the analyzer/recommender.
-
-**Subsystems**
-1. **Crawlers**
-   - YouTube trends, Google Trends, Reddit (extendable).
-2. **Normalizer**
-   - Unify schema across sources.
-3. **Pattern Miner**
-   - Topic velocity, growth rate, decay, novelty.
-4. **Trend Store**
-   - Vector + relational features for retrieval.
-5. **Trend Context API**
-   - Query by niche/category/region/time window.
-
-**Output contract**
-`trend_context_v1`
-- top active topics
-- rising/falling signals
-- semantic similarity features
-- trend confidence + freshness timestamp
+FastAPI entrypoint exposing API endpoints to frontend and external services.
 
 ---
 
-## 2.5 Recommendation Engine App
-**Purpose**
-Transform analysis + trend context into structured improvement actions.
+### 2. `frontend/`
 
-**Input**
-- `analysis_v1`
-- `trend_context_v1`
-- optional channel history signals
+Provides interactive UI for creators and analysts.
 
-**Output contract**
-`recommendation_v1.json`
-Each recommendation must include:
-- `problem`
-- `evidence` (timestamps/features)
-- `action`
-- `expected_effect`
-- `priority`
-- `confidence`
+- **`components/`** – Reusable visualizations (graphs, trend cards, video score cards).  
+- **`pages/`** – Dashboard, upload, authentication, and report views.  
+- **`services/`** – API client calls to backend modules.  
+- **`assets/`** – Icons, logos, thumbnails, and UI assets.
+
+**Expected User Journey:**  
+1. Login via OAuth.  
+2. Dashboard shows channel metrics and trend opportunities.  
+3. Upload video → automated analysis → AI recommendations.  
+4. User adjusts content based on recommendations.  
+5. System tracks outcomes and feeds back to AI models.  
 
 ---
 
-## 2.6 Outcome & Feedback App
-**Purpose**
-Close the loop between recommendations and real-world post-publish outcomes.
+### 3. `models/` (planned)
 
-**Responsibilities**
-- Collect adoption signals (which recommendation was applied).
-- Pull post-publish metrics.
-- Attribute uplift to recommendation categories.
-- Feed periodic retraining/prompt tuning.
+AI model storage and organization:
 
----
+- **`nlp/`** – Title/tag prediction, trend analysis, sentiment scoring.  
+- **`vision/`** – Thumbnail evaluation, frame analysis, OCR.  
+- **`audio/`** – Voice clarity, emotion, pacing detection.  
+- **`fusion/`** – Multimodal combination for engagement prediction.  
 
-## 3. Shared Platform Subsystems
-
-## 3.1 Job Orchestration
-- Queue-based workflow (Redis + worker framework).
-- Job states: `queued`, `preprocessing`, `analyzing`, `trend_enrichment`, `recommending`, `completed`, `failed`.
-- Retry policy and dead-letter queues.
-
-## 3.2 Storage Subsystem
-- Object storage for artifacts.
-- PostgreSQL for job metadata/results.
-- Redis for queue/cache.
-
-## 3.3 Model Serving Subsystem
-- Versioned model registry metadata.
-- CPU/GPU worker routing.
-- Warm pools for large models.
-
-## 3.4 Observability Subsystem
-- Structured logs with correlation IDs.
-- Metrics: job latency, queue lag, model runtime, failure reason distribution.
-- Tracing for stage-level debugging.
-
-## 3.5 Security Subsystem
-- OAuth2/JWT auth.
-- Signed object URLs.
-- Secrets via environment/manager.
-- Data retention controls.
+**Expected Outputs:** AI-generated insights for each video in near real-time, saved locally and optionally in cloud object storage.
 
 ---
 
-## 4. End-to-End Pipeline Design
+### 4. `data/`
 
-## 4.1 Runtime inference pipeline
-1. Client creates job (`POST /jobs`).
-2. Ingestion service stores media + builds artifacts.
-3. Analyzer service computes multimodal features.
-4. TPE service returns trend context.
-5. Recommender generates structured output.
-6. Result persisted and exposed via API.
+Central repository for all video and model data:
 
-## 4.2 Offline training pipeline
-1. Data ingestion from curated datasets + anonymized internal outcomes.
-2. Feature generation and labeling.
-3. Model training/fine-tuning.
-4. Evaluation gates.
-5. Registry publish + staged rollout.
+- **`raw/`** – Original uploaded videos and source artifacts.  
+- **`processed/`** – Cleaned and structured data for AI modules.  
+- **`embeddings/` (planned)** – Vectorized representations for semantic search and trend similarity.
 
-## 4.3 Continuous improvement pipeline
-- Weekly retraining windows.
-- Prompt/recommender template updates via A/B results.
-- Regression checks before release.
+**Automation:** New uploads trigger preprocessing automatically.
 
 ---
 
-## 5. Existing Repository Mapping (Current Code)
+### 5. `scripts/`
 
-Already present in repo:
-- FastAPI app wiring in `backend/main.py`.
-- Video analyzer endpoint and pipeline under `backend/api/video_analyzer/`.
-- Content analyzer module under `backend/api/content_analyzer/`.
-- Channel context API in `backend/api/channel_context/`.
-- YouTube OAuth skeleton in `backend/core/youtube_auth.py`.
+Pipeline automation scripts:
 
-Data artifacts already generated under:
-- `data/raw/`
-- `data/processed/job_.../`
-- `data/processed/analysis/`
+- **`preprocess.py`** – Cleans and structures raw video/transcript data.  
+- **`train_model.py`** – Trains AI modules with GPU acceleration.  
+- **`evaluate.py`** – Validates model quality and performance metrics.  
+- **`inference.py`** – Runs inference and recommendation generation.
+
+**Expected Result:** Seamless pipeline from upload → analysis → recommendation → feedback.
 
 ---
 
-## 6. Gaps to Implement Next
+### 6. `docs/` (planned)
 
-1. Convert request-bound processing to queue-driven job execution.
-2. Introduce stable contracts: `artifact_manifest_v1`, `analysis_v1`, `trend_context_v1`, `recommendation_v1`.
-3. Add database schema + migrations for jobs and results.
-4. Build dedicated TPE service and API.
-5. Add recommendation engine with strict evidence binding.
-6. Add test suites for each pipeline stage (unit + integration + smoke).
+Documentation and references:
 
----
-
-## 7. Cloud GPU Strategy
-
-No local GPU dependency is required.
-
-Recommended runtime split:
-- CPU workers: preprocessing, OCR-lite, basic NLP.
-- GPU workers: ASR, heavy vision, embedding/ranking models.
-
-Use cloud providers (RunPod/Lambda/Vast/Modal/AWS/GCP/Azure) with autoscaling by queue depth and stage SLA.
+- **`architecture_diagrams/`** – Visual module interactions and data flow.  
+- **`api_docs/`** – OpenAPI and endpoint references.  
+- **`model_docs/`** – Model usage, datasets, hyperparameters, and tuning notes.
 
 ---
 
-## 8. Implementation Reference
+### 7. Deployment & Operations
 
-Detailed phased implementation instructions are in:
-- [`plan.md`](./plan.md)
+- **Development:** local/containerized development environment for frontend/backend coding.  
+- **Processing:** Vast.ai GPU instances (or equivalent) for training/inference.  
+- **Storage:** Raw/processed artifacts on cloud SSD/object storage; models/embeddings persisted for fast reload.  
+- **Automation:** scheduler/cron for scraping, analysis, and retraining workflows.  
+- **Scalability:** modular services support horizontal scaling and parallel GPU workers.  
+- **Security:** OAuth authentication, isolated GPU workers, encrypted storage for sensitive data.
 
 ---
 
-## 9. Quickstart (Current Prototype)
+### 8. Key Deliverables
 
-```bash
-cd backend
-pip install -r requirements.txt
-uvicorn main:app --reload
-```
+- Automated AI pipelines for video analysis and recommendations.  
+- Interactive dashboard for trend, engagement, and performance analytics.  
+- Scalable AI modules optimized for GPU execution.  
+- Persistent storage for models, embeddings, and processed data.  
+- Closed-loop feedback improving recommendations over time.  
+- API endpoints for integration with external tools.
 
-API docs:
-- `http://localhost:8000/docs`
+---
+
+## Current Implementation Snapshot
+
+Already present in this repository:
+- FastAPI backend with `channel_context`, `video_analyzer`, and `content_analyzer` routes.
+- YouTube OAuth skeleton.
+- Existing artifacts under `data/raw` and `data/processed` from previous runs.
+
+Planned subsystems listed above are the target blueprint and should be implemented incrementally.
