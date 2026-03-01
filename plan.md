@@ -1,237 +1,264 @@
-# TrendyAI Market-Leading Execution Plan
+# TrendyAI Engineering Plan
 
-This plan focuses on one outcome: **deliver materially better ROI for creators than competing tools**.
-
----
-
-## 1) North Star, Positioning, and Success Criteria
-
-## 1.1 North Star
-Maximize creator growth outcomes per unit of production effort.
-
-## 1.2 Positioning
-TrendyAI is not just analytics and not just AI writing. It is a **decision engine + execution system** for video performance.
-
-## 1.3 Success criteria (what “better than market” means)
-- Time-to-actionable-report: < 5 min for standard videos.
-- Recommendation adoption rate: > 35%.
-- Measured uplift among adopters:
-  - +8–15% retention in first 30 seconds,
-  - +5–12% CTR improvement,
-  - +10% watch-time growth over baseline.
-- User retention: weekly active creators with recurring usage > 50%.
+A subsystem-first implementation plan aligned with the original AutoInsightAI design.
 
 ---
 
-## 2) Product Strategy: Value for Money
+## 1. Engineering Design Process (How We Build)
 
-## 2.1 Product tiers
-- **Starter**: single creator, core analysis.
-- **Pro**: trend intelligence + deeper recommendations + A/B guidance.
-- **Team/Agency**: multi-seat, workflow controls, benchmark analytics.
+Use this design process for every major feature/model update.
 
-## 2.2 Value framework for each recommendation
-Every recommendation should include:
-1. what is wrong,
-2. where it appears (timestamp/asset),
-3. what to change,
-4. confidence,
-5. expected impact range,
-6. effort estimate.
+## Step 1 — Problem Definition
+- Define exactly which pipeline stage is being improved.
+- Define required input/output schema updates.
+- Define success metrics and failure modes.
 
-## 2.3 ROI surfaces in product
-- “If you apply top 3 edits, expected uplift = X.”
-- historical before/after improvements.
-- cost-impact leaderboard (highest return edits first).
+## Step 2 — System Contract Design
+- Write or update data contracts first:
+  - `artifact_manifest_v1`
+  - `analysis_v1`
+  - `trend_context_v1`
+  - `recommendation_v1`
+- Add backward compatibility/version policy.
 
----
+## Step 3 — Subsystem Implementation
+- Implement behind clear interfaces.
+- Keep model logic isolated from API logic.
+- Ensure each stage is independently testable.
 
-## 3) Current-State Assessment (Repo)
+## Step 4 — Evaluation & Validation
+- Unit tests for deterministic utilities.
+- Integration tests for stage-to-stage contract compatibility.
+- Golden sample regression tests for inference outputs.
 
-## What exists
-- FastAPI backend wiring.
-- Video analysis endpoint pipeline.
-- Content analysis endpoint pipeline.
-- YouTube channel context + OAuth skeleton.
-- Artifact outputs in local data folders.
-
-## Key shortcomings
-- No production job queue/state machine.
-- No robust persistence models/migrations.
-- No frontend app.
-- No recommendation efficacy evaluation loop.
-- Placeholder training/inference scripts.
+## Step 5 — Release & Observability
+- Stage rollout with metrics dashboards.
+- Monitor latency, error rates, and output-quality drift.
 
 ---
 
-## 4) Target Architecture (Production)
+## 2. Target System Blueprint
 
-`Web App/API Clients → FastAPI → Redis Queue → CPU/GPU Workers → Postgres + Object Storage → Recommendation API → Analytics`
+## 2.1 Core Apps
+1. API Gateway
+2. Ingestion & Preprocessing
+3. Core Multimodal Analyzer
+4. Trend Pattern Engine (TPE)
+5. Recommendation Engine
+6. Outcome & Feedback Service
 
-### Core services
-1. **API Service**: auth, contracts, job orchestration.
-2. **Ingestion Service**: upload validation, storage, metadata.
-3. **Inference Workers**:
-   - CPU workers for lightweight analysis,
-   - GPU workers for ASR/vision/ranking.
-4. **Trend Pattern Engine (TPE)**:
-   - crawler jobs,
-   - trend feature store,
-   - trend context serving.
-5. **Recommendation Service**:
-   - structured generation,
-   - confidence and impact scoring,
-   - policy guardrails.
-6. **Outcome Measurement Service**:
-   - recommendation adoption,
-   - post-publish uplift attribution.
+## 2.2 Shared Subsystems
+- Job queue/orchestrator
+- Object storage + DB
+- Model serving/runtime router
+- Monitoring/tracing/logging
+- Auth/security controls
 
 ---
 
-## 5) Phased Delivery Plan
+## 3. Pipeline Contracts (Must-Have)
 
-## Phase 0 — Stabilize Foundations (Week 1)
-- Dependency cleanup into layered requirements.
-- Config management with `.env.example` + validation.
-- Linting/testing baseline.
-- Basic API contract tests.
+## 3.1 artifact_manifest_v1
+Contains deterministic pointers to all artifacts produced by preprocessing.
+
+Required fields:
+- job_id
+- source_video_uri
+- audio_uri
+- frame_uris
+- metadata_uri
+- checksums
+- created_at
+
+## 3.2 analysis_v1
+Contains model outputs from audio/text/visual/temporal analyzers.
+
+Required sections:
+- transcript + timestamps
+- summary
+- keywords/topics
+- sentiment/emotion
+- visual detections + OCR
+- hook/pacing features
+- module-level confidence
+
+## 3.3 trend_context_v1
+Contains trend features used during recommendation.
+
+Required sections:
+- trending_topics
+- momentum_scores
+- novelty_index
+- niche_context
+- freshness/confidence
+
+## 3.4 recommendation_v1
+Contains actionable outputs.
+
+Required sections:
+- recommendation_id
+- problem
+- evidence_refs
+- action
+- expected_effect
+- priority
+- confidence
+
+---
+
+## 4. Detailed Subsystem Plan
+
+## 4.1 API Gateway
+- Add job-centric APIs.
+- Add idempotency keys and request validation.
+- Add WebSocket/SSE for progress updates.
+
+## 4.2 Ingestion/Preprocessing
+- Standardize FFmpeg/media pipeline.
+- Deterministic frame sampling policy.
+- Artifact manifest generation + checksum validation.
+
+## 4.3 Core Analyzer
+- ASR chunking for long content.
+- Long-text summarization strategy.
+- NLP features (topics/keywords/sentiment).
+- Vision features (objects/OCR/visual quality).
+- Temporal features (hook window).
+
+## 4.4 TPE
+- Build daily crawlers and normalizer.
+- Implement topic vectorization and momentum scoring.
+- Serve trend context by niche/region/time.
+
+## 4.5 Recommendation Engine
+- Build rules + model hybrid recommendation stack.
+- Strict evidence binding and confidence calibration.
+- Priority ranking by expected impact.
+
+## 4.6 Outcome Service
+- Track recommendation adoption.
+- Correlate adopted actions with post-publish metrics.
+- Produce training signals for future tuning.
+
+---
+
+## 5. Phase-by-Phase Delivery
+
+## Phase 0 — Repository & Runtime Stabilization (Week 1)
+- Dependency segmentation (`base/inference/dev`).
+- Centralized config validation.
+- Baseline CI (lint + tests).
 
 **Exit criteria**
-- Clean install + reproducible app startup.
-- CI executes lint + tests on every PR.
+- Fresh setup works reliably.
+- CI gates active.
 
-## Phase 1 — Job Backbone and Reliability (Week 1–2)
-- Implement `AnalysisJob` lifecycle and queue worker processing.
-- Add retries, idempotency keys, and dead-letter handling.
-- Add progress events + status endpoints.
-
-**Exit criteria**
-- Upload API is non-blocking.
-- Failure recovery works without data corruption.
-
-## Phase 2 — Recommendation Quality Core (Week 2–4)
-- Versioned output schemas (`analysis_v1`, `recommendation_v1`).
-- Evidence-binding for all recommendations.
-- Priority ranking by expected impact/effort.
-- Human-readable + machine-readable recommendation formats.
+## Phase 1 — Job Orchestrator & Contracts (Week 1–2)
+- Queue integration and state machine.
+- Implement `artifact_manifest_v1`.
+- Add job/result DB models.
 
 **Exit criteria**
-- 100% recommendations contain evidence and confidence.
-- Internal reviewers rate > 80% recommendations as actionable.
+- Async processing works with retries.
 
-## Phase 3 — Trend Pattern Engine v1 (Week 4–6)
-- Build daily trend crawlers and normalization jobs.
-- Add topic momentum/novelty/decay features.
-- Integrate trend context scoring into recommendation ranking.
-
-**Exit criteria**
-- Every report includes trend-fit section with confidence.
-
-## Phase 4 — Frontend MVP to Product v1 (Week 5–8)
-- Dashboard: upload, progress, report, recommendation checklist.
-- Edit workflow: assign/track completed suggestions.
-- Historical insights: compare uploads and outcomes.
+## Phase 2 — Analyzer Hardening (Week 2–4)
+- Refactor analyzer into independent stage modules.
+- Implement `analysis_v1` with confidence fields.
+- Add integration tests with golden samples.
 
 **Exit criteria**
-- Users can run full workflow without API docs.
+- Stable deterministic outputs across test media set.
 
-## Phase 5 — Outcome Intelligence (Week 8–10)
-- Connect to post-publish metrics.
-- Build uplift attribution per adopted recommendation.
-- Add creator-specific learning loop (what works for this channel).
-
-**Exit criteria**
-- Product can prove measured value to paying users.
-
-## Phase 6 — Scale, Security, and Enterprise Readiness (Week 10–12)
-- Multi-tenant controls and RBAC.
-- Audit logs and policy controls.
-- SLO-based autoscaling and on-call alerts.
-- Cost optimization program for GPU workloads.
+## Phase 3 — TPE Buildout (Week 4–6)
+- Crawler jobs + normalization.
+- Trend scoring and context API.
+- Implement `trend_context_v1`.
 
 **Exit criteria**
-- Stable production operations with clear SLOs and cost KPIs.
+- Analyzer can request and consume trend context per job.
+
+## Phase 4 — Recommendation Engine (Week 6–8)
+- Implement recommendation generation contract.
+- Implement `recommendation_v1`.
+- Add policy checks for unsupported recommendations.
+
+**Exit criteria**
+- All recommendations are evidence-backed and structured.
+
+## Phase 5 — Feedback Loop + Evaluation (Week 8–10)
+- Build adoption/outcome instrumentation.
+- Add periodic evaluation reports.
+- Create retraining/prompt tuning hooks.
+
+**Exit criteria**
+- Closed-loop learning operational.
+
+## Phase 6 — Production Operations (Week 10–12)
+- Autoscaling and capacity policies.
+- SLO dashboard + alerts.
+- Security hardening and retention automation.
+
+**Exit criteria**
+- Production-ready reliability and operational visibility.
 
 ---
 
-## 6) ML and Evaluation Strategy
+## 6. Testing Strategy (Engineering)
 
-## 6.1 Evaluation layers
-1. **Component quality**: ASR WER, OCR precision, topic relevance.
-2. **Recommendation quality**: actionability score, evidence adequacy.
-3. **Business impact**: CTR/retention/watch-time uplift.
+## 6.1 Unit Tests
+- Media utilities
+- Schema validators
+- Text/feature utility functions
 
-## 6.2 Offline + online loop
-- Offline benchmark datasets for repeatable regressions.
-- Online A/B testing of recommendation templates and prioritization.
-- Continuous model/prompt tuning from outcome signals.
+## 6.2 Integration Tests
+- End-to-end from job creation to result retrieval.
+- Contract validation between each stage output/input.
 
-## 6.3 Guardrails
-- Avoid unsupported claims.
-- Confidence-calibrated outputs.
-- Fallback recommendations when evidence is weak.
+## 6.3 Regression Tests
+- Golden media dataset.
+- Compare output drift by schema + key score deltas.
 
----
-
-## 7) Cloud GPU, Cost, and Performance Plan
-
-## 7.1 Infrastructure principle
-No hard dependency on local GPUs; use rentable cloud GPU pools.
-
-## 7.2 Initial setup
-- Start with L4/A10 class GPU pool for inference.
-- Route CPU-compatible jobs away from GPU.
-- Autoscale workers by queue length + response SLA.
-
-## 7.3 Cost optimization order
-1. Workload routing (CPU vs GPU).
-2. Batching and async pipelines.
-3. Quantization/distillation.
-4. Caching repeated computations.
-5. Provider optimization (spot/preemptible where safe).
+## 6.4 Operational Tests
+- Queue backpressure behavior.
+- Worker crash/retry recovery.
+- Storage failure fallback behavior.
 
 ---
 
-## 8) Go-to-Market Product Features That Increase Perceived Value
+## 7. MLOps and Model Lifecycle
 
-1. **Action checklist mode**: one-click “apply this first.”
-2. **What changed?** diff view between video versions.
-3. **Niche benchmark panels** vs competitor channels.
-4. **Trend timing alerts** (“publish now”, “wait”, “pivot angle”).
-5. **Agency workspace** for multi-client operations.
-6. **Weekly growth reports** auto-generated from outcomes.
+- Model version metadata in DB.
+- Promotion flow: dev -> staging -> prod.
+- Shadow runs for new models before full rollout.
+- Drift monitoring on transcription/topic/recommendation quality.
 
 ---
 
-## 9) Execution Governance
+## 8. Infrastructure Plan
 
-## 9.1 Weekly operating cadence
-- Mon: roadmap + model quality review.
-- Wed: reliability/performance/cost review.
-- Fri: user outcome and adoption review.
+## 8.1 Compute Split
+- CPU nodes: preprocessing and lightweight analysis.
+- GPU nodes: heavy ASR/vision/embedding inference.
 
-## 9.2 Decision dashboard
-Track these every week:
-- report latency,
-- recommendation adoption,
-- measured uplift,
-- GPU cost per report,
-- system failure rate,
-- user retention.
+## 8.2 Cloud Runtime
+- Run in containerized services.
+- Queue-driven autoscaling.
+- Object storage for artifacts.
 
-## 9.3 Stop-doing rules
-- Do not ship features without measurable outcome hypothesis.
-- Do not increase model cost unless uplift justifies it.
-- Do not release recommendations without evidence linkage.
+## 8.3 Cost Controls
+- Stage-level timing and resource metrics.
+- Route jobs to minimum required compute tier.
+- Batch compatible inference workloads.
 
 ---
 
-## 10) Next Sprint (Immediate Action Items)
+## 9. Immediate Engineering Tasks
 
-1. Implement async queue + `AnalysisJob` lifecycle.
-2. Add DB schema + migrations for users/jobs/results/recommendations.
-3. Refactor pipeline into composable steps with explicit contracts.
-4. Implement recommendation schema with evidence/impact/effort fields.
-5. Build dashboard MVP (upload, status, report, checklist).
-6. Add baseline evaluation suite and weekly scorecard.
+1. Implement `POST /jobs` + async queue processing.
+2. Add DB schema and migrations for jobs/artifacts/results.
+3. Build and enforce schema validation for v1 contracts.
+4. Refactor current analyzer code into stage modules.
+5. Implement first TPE crawler + trend context endpoint.
+6. Implement first structured recommendation engine.
+7. Add integration tests across full pipeline.
 
